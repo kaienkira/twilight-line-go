@@ -9,3 +9,9 @@ build-server:
 
 build-client:
 	go build -o bin/twilight-line-client $(PROJ_PATH)/client
+
+runs:
+	bin/twilight-line-server
+
+runc:
+	bin/twilight-line-client
