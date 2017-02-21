@@ -10,8 +10,21 @@ build-server:
 build-client:
 	go build -o bin/twilight-line-client $(PROJ_PATH)/client
 
-runs:
+run-server:
 	bin/twilight-line-server
 
-runc:
+run-client:
 	bin/twilight-line-client
+
+check-format:
+	@find . -name '*.go' -exec gofmt -d {} \; -print
+
+do-format:
+	@find . -name '*.go' -exec gofmt -w {} \; -print
+
+bs: build-server
+bc: build-client
+rs: run-server
+rc: run-client
+fmt: check-format
+dofmt: do-format
