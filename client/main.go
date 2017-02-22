@@ -33,6 +33,8 @@ func proxy(clientConn net.Conn) {
 		log.Printf("%v", err)
 		return
 	}
+	defer serverConn.Close()
+
 	c := NewTlClient(serverConn)
 
 	err = c.Connect(dstAddr)
