@@ -8,7 +8,8 @@ import (
 )
 
 type TlClient struct {
-	conn net.Conn
+	conn    net.Conn
+	commKey []byte
 }
 
 func NewTlClient(conn net.Conn) *TlClient {
@@ -47,10 +48,18 @@ func (c *TlClient) Connect(dstAddr string) error {
 		b.WriteTo(c)
 	}
 	{
-		b := make([]byte, 1)
+		b := make([]byte, 256)
 		_, err := io.ReadFull(c, b[:1])
 		if err != nil {
-			return nil
+			return err
+		}
+
+		// create communication key
+		commKeyLen := int(b[0])
+		c.commKey = make([]byte, commKeyLen)
+		_, err = io.ReadFull(c, c.commKey)
+		if err != nil {
+			return err
 		}
 	}
 

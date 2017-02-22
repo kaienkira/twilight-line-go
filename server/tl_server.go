@@ -2,11 +2,13 @@ package main
 
 import (
 	"io"
+	"math/rand"
 	"net"
 )
 
 type TlServer struct {
-	conn net.Conn
+	conn    net.Conn
+	commKey []byte
 }
 
 func NewTlServer(conn net.Conn) *TlServer {
@@ -57,7 +59,16 @@ func (s *TlServer) Accept() (net.Conn, error) {
 		return nil, err
 	}
 
-	s.Write([]byte{0x00})
+	// create communication key
+	commKeyLen := 32 + rand.Intn(128-32)
+	s.commKey = make([]byte, commKeyLen)
+	for i := 0; i < commKeyLen; i++ {
+		s.commKey[i] = byte(rand.Intn(256))
+	}
+
+	b[0] = byte(commKeyLen)
+	copy(b[1:], s.commKey)
+	s.Write(b[:commKeyLen+1])
 
 	return conn, nil
 }
