@@ -13,6 +13,7 @@ import (
 
 type Configuration struct {
 	LocalAddr string
+	SecKey    string
 }
 
 var Config Configuration
@@ -21,7 +22,7 @@ func proxy(clientConn net.Conn) {
 	defer clientConn.Close()
 
 	// create tl server
-	s := NewTlServer(clientConn)
+	s := NewTlServer(clientConn, Config.SecKey)
 	serverConn, err := s.Accept()
 	if err != nil {
 		return
@@ -75,6 +76,8 @@ func main() {
 		"config file path")
 	flag.StringVar(&Config.LocalAddr, "l", "",
 		"REQUIRED: localAddr(local listen addr)")
+	flag.StringVar(&Config.SecKey, "k", "",
+		"secKey(secure key)")
 	flag.Parse()
 
 	if *configFile != "" {

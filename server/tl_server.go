@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bytes"
+	"crypto/sha256"
 	"io"
 	"math/rand"
 	"net"
@@ -8,12 +10,14 @@ import (
 
 type TlServer struct {
 	conn    net.Conn
+	secKey  string
 	commKey []byte
 }
 
-func NewTlServer(conn net.Conn) *TlServer {
+func NewTlServer(conn net.Conn, secKey string) *TlServer {
 	s := new(TlServer)
 	s.conn = conn
+	s.secKey = secKey
 	return s
 }
 
@@ -48,12 +52,25 @@ func (s *TlServer) Accept() (net.Conn, error) {
 		return nil, err
 	}
 	addrLen := int(b[0])<<8 + int(b[1])
+	if addrLen > 260 {
+		return nil, ErrProtocolError
+	}
 
 	_, err = io.ReadFull(s, b[:addrLen])
 	if err != nil {
 		return nil, err
 	}
 	addr := string(b[:addrLen])
+
+	// check addr sign
+	_, err = io.ReadFull(s, b[:32])
+	if err != nil {
+		return nil, err
+	}
+	sign := sha256.Sum256([]byte(addr + s.secKey))
+	if bytes.Equal(sign[:], b[:32]) == false {
+		return nil, ErrProtocolError
+	}
 
 	// connect to request addr
 	conn, err := net.Dial("tcp4", addr)

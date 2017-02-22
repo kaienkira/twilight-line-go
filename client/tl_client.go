@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"crypto/sha256"
 	"encoding/binary"
 	"io"
 	"net"
@@ -9,12 +10,14 @@ import (
 
 type TlClient struct {
 	conn    net.Conn
+	secKey  string
 	commKey []byte
 }
 
-func NewTlClient(conn net.Conn) *TlClient {
+func NewTlClient(conn net.Conn, secKey string) *TlClient {
 	c := new(TlClient)
 	c.conn = conn
+	c.secKey = secKey
 	return c
 }
 
@@ -46,6 +49,8 @@ func (c *TlClient) Connect(dstAddr string) error {
 		b := new(bytes.Buffer)
 		binary.Write(b, binary.BigEndian, int16(len(dstAddr)))
 		b.WriteString(dstAddr)
+		sign := sha256.Sum256([]byte(dstAddr + c.secKey))
+		b.Write(sign[:])
 		b.WriteTo(c)
 	}
 	{
