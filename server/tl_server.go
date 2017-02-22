@@ -42,6 +42,7 @@ func (s *TlServer) Write(buf []byte) (int, error) {
 func (s *TlServer) Accept() (net.Conn, error) {
 	b := make([]byte, 512)
 
+	// read request addr
 	_, err := io.ReadFull(s, b[:2])
 	if err != nil {
 		return nil, err
@@ -54,6 +55,7 @@ func (s *TlServer) Accept() (net.Conn, error) {
 	}
 	addr := string(b[:addrLen])
 
+	// connect to request addr
 	conn, err := net.Dial("tcp4", addr)
 	if err != nil {
 		return nil, err
@@ -66,6 +68,7 @@ func (s *TlServer) Accept() (net.Conn, error) {
 		s.commKey[i] = byte(rand.Intn(256))
 	}
 
+	// send communication key
 	b[0] = byte(commKeyLen)
 	copy(b[1:], s.commKey)
 	s.Write(b[:commKeyLen+1])

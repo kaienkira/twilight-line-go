@@ -42,19 +42,19 @@ func (c *TlClient) Write(buf []byte) (int, error) {
 
 func (c *TlClient) Connect(dstAddr string) error {
 	{
+		// send request addr
 		b := new(bytes.Buffer)
 		binary.Write(b, binary.BigEndian, int16(len(dstAddr)))
 		b.WriteString(dstAddr)
 		b.WriteTo(c)
 	}
 	{
+		// create communication key
 		b := make([]byte, 256)
 		_, err := io.ReadFull(c, b[:1])
 		if err != nil {
 			return err
 		}
-
-		// create communication key
 		commKeyLen := int(b[0])
 		c.commKey = make([]byte, commKeyLen)
 		_, err = io.ReadFull(c, c.commKey)
