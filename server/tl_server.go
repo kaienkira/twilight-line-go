@@ -2,6 +2,8 @@ package main
 
 import (
 	"bytes"
+	"crypto/aes"
+	"crypto/cipher"
 	"crypto/sha256"
 	"io"
 	"math/rand"
@@ -12,28 +14,40 @@ type TlServer struct {
 	conn    net.Conn
 	secKey  string
 	commKey []byte
+	encoder cipher.Stream
+	decoder cipher.Stream
 }
 
 func NewTlServer(conn net.Conn, secKey string) *TlServer {
+	aesKey := sha256.Sum256([]byte(secKey))
+	iv := make([]byte, aes.BlockSize)
+
+	encoderCipher, _ := aes.NewCipher(aesKey[:])
+	encoder := cipher.NewCFBEncrypter(encoderCipher, iv)
+	decoderCipher, _ := aes.NewCipher(aesKey[:])
+	decoder := cipher.NewCFBDecrypter(decoderCipher, iv)
+
 	s := new(TlServer)
 	s.conn = conn
 	s.secKey = secKey
+	s.encoder = encoder
+	s.decoder = decoder
 	return s
 }
 
 func (s *TlServer) Read(buf []byte) (int, error) {
-	// TODO: decode here
-
 	n, err := s.conn.Read(buf)
 	if err != nil {
 		return n, err
 	}
 
+	s.decoder.XORKeyStream(buf[:n], buf[:n])
+
 	return n, nil
 }
 
 func (s *TlServer) Write(buf []byte) (int, error) {
-	// TODO: encode here
+	s.encoder.XORKeyStream(buf, buf)
 
 	n, err := s.conn.Write(buf)
 	if err != nil {
