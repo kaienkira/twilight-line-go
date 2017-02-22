@@ -84,7 +84,7 @@ func (s *Socks5Server) ReceiveDstAddr() (string, error) {
 func (s *Socks5Server) NotifyConnectSuccess() error {
 	_, err := s.conn.Write([]byte{
 		0x05, 0x00, 0x00, 0x01, 0x00,
-	    0x00, 0x00, 0x00, 0x00, 0x00})
+		0x00, 0x00, 0x00, 0x00, 0x00})
 	if err != nil {
 		return err
 	}

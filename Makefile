@@ -11,10 +11,10 @@ build-client:
 	go build -o bin/twilight-line-client $(PROJ_PATH)/client
 
 run-server:
-	bin/twilight-line-server
+	bin/twilight-line-server -e etc/server_config.json
 
 run-client:
-	bin/twilight-line-client
+	bin/twilight-line-client -e etc/client_config.json
 
 check-format:
 	@find . -name '*.go' -exec gofmt -d {} \; -print
