@@ -27,7 +27,7 @@ func proxy(clientConn net.Conn) {
 	if err != nil {
 		return
 	}
-    defer serverConn.Close()
+	defer serverConn.Close()
 
 	go io.Copy(serverConn, s)
 	io.Copy(s, serverConn)
@@ -44,6 +44,7 @@ func handleProxy() {
 		conn, err := l.Accept()
 		if err != nil {
 			log.Printf("%v", err)
+			continue
 		}
 		go proxy(conn)
 	}

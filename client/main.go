@@ -70,6 +70,7 @@ func handleProxy() {
 		conn, err := l.Accept()
 		if err != nil {
 			log.Printf("%v", err)
+			continue
 		}
 		go proxy(conn)
 	}
