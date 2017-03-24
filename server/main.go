@@ -18,6 +18,19 @@ type Configuration struct {
 
 var Config Configuration
 
+func copyData(src io.Reader, dest io.Writer, quitSignal chan bool) {
+	for {
+		b := make([]byte, 32*1024)
+
+		n, err := src.Read(b)
+		if err != nil {
+			quitSignal <- true
+			return
+		}
+		dest.Write(b[:n])
+	}
+}
+
 func proxy(clientConn net.Conn) {
 	defer clientConn.Close()
 
@@ -29,8 +42,10 @@ func proxy(clientConn net.Conn) {
 	}
 	defer serverConn.Close()
 
-	go io.Copy(serverConn, s)
-	io.Copy(s, serverConn)
+	quitSignal := make(chan bool)
+	go copyData(serverConn, s, quitSignal)
+	go copyData(s, serverConn, quitSignal)
+	<-quitSignal
 }
 
 func handleProxy() {
