@@ -9,11 +9,16 @@ import (
 	"log"
 	"net"
 	"os"
+	"strings"
 )
 
 type Configuration struct {
-	LocalAddr string
-	SecKey    string
+	LocalAddr         string
+	SecKey            string
+	FakeRequest       []string
+	FakeResponse      []string
+	fakeRequestBytes  []byte
+	fakeResponseBytes []byte
 }
 
 var Config Configuration
@@ -35,7 +40,8 @@ func proxy(clientConn net.Conn) {
 	defer clientConn.Close()
 
 	// create tl server
-	s := NewTlServer(clientConn, Config.SecKey)
+	s := NewTlServer(clientConn, Config.SecKey,
+		Config.fakeRequestBytes, Config.fakeResponseBytes)
 	serverConn, err := s.Accept()
 	if err != nil {
 		return
@@ -104,6 +110,11 @@ func main() {
 			return
 		}
 	}
+	Config.fakeRequestBytes =
+		[]byte(strings.Join(Config.FakeRequest, ""))
+	Config.fakeResponseBytes =
+		[]byte(strings.Join(Config.FakeResponse, ""))
+
 	if checkConfig() == false {
 		fmt.Fprintf(os.Stderr, "please read help with -h or --help\n")
 		return

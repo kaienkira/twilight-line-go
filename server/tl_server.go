@@ -11,15 +11,32 @@ import (
 )
 
 type TlServer struct {
-	conn    net.Conn
-	secKey  string
-	commKey []byte
-	encoder cipher.Stream
-	decoder cipher.Stream
+	conn              net.Conn
+	secKey            string
+	fakeRequestBytes  []byte
+	fakeResponseBytes []byte
+	commKey           []byte
+	encoder           cipher.Stream
+	decoder           cipher.Stream
 }
 
-func NewTlServer(conn net.Conn, secKey string) *TlServer {
-	aesKey := sha256.Sum256([]byte(secKey))
+func NewTlServer(
+	conn net.Conn,
+	secKey string,
+	fakeRequestBytes []byte,
+	fakeResponseBytes []byte) *TlServer {
+
+	s := new(TlServer)
+	s.conn = conn
+	s.secKey = secKey
+	s.fakeRequestBytes = fakeRequestBytes
+	s.fakeResponseBytes = fakeResponseBytes
+	s.ResetCipher([]byte(secKey))
+	return s
+}
+
+func (s *TlServer) ResetCipher(key []byte) {
+	aesKey := sha256.Sum256(key)
 	iv := make([]byte, aes.BlockSize)
 
 	encoderCipher, _ := aes.NewCipher(aesKey[:])
@@ -27,12 +44,8 @@ func NewTlServer(conn net.Conn, secKey string) *TlServer {
 	decoderCipher, _ := aes.NewCipher(aesKey[:])
 	decoder := cipher.NewCFBDecrypter(decoderCipher, iv)
 
-	s := new(TlServer)
-	s.conn = conn
-	s.secKey = secKey
 	s.encoder = encoder
 	s.decoder = decoder
-	return s
 }
 
 func (s *TlServer) Read(buf []byte) (int, error) {
@@ -58,6 +71,28 @@ func (s *TlServer) Write(buf []byte) (int, error) {
 }
 
 func (s *TlServer) Accept() (net.Conn, error) {
+	{
+		// read fake request
+		b2 := make([]byte, len(s.fakeRequestBytes))
+		l := 0
+		for {
+			n, err := s.conn.Read(b2[l:])
+			if err != nil {
+				return nil, err
+			}
+
+			if bytes.Equal(
+				s.fakeRequestBytes[l:l+n], b2[l:l+n]) == false {
+				return nil, ErrProtocolError
+			}
+
+			l += n
+			if l >= len(s.fakeRequestBytes) {
+				break
+			}
+		}
+	}
+
 	b := make([]byte, 512)
 
 	// read request addr
@@ -99,10 +134,24 @@ func (s *TlServer) Accept() (net.Conn, error) {
 		s.commKey[i] = byte(rand.Intn(256))
 	}
 
-	// send communication key
-	b[0] = byte(commKeyLen)
-	copy(b[1:], s.commKey)
-	s.Write(b[:commKeyLen+1])
+	{
+		b2 := new(bytes.Buffer)
+		// write fake response
+		b2.Write(s.fakeResponseBytes[:])
+		{
+			b3 := new(bytes.Buffer)
+			// write communication key
+			b3.WriteByte(byte(commKeyLen))
+			b3.Write(s.commKey[:])
+			// encrypt data
+			s.encoder.XORKeyStream(b3.Bytes(), b3.Bytes())
+			b3.WriteTo(b2)
+		}
+		b2.WriteTo(s.conn)
+	}
+
+	// reset cipher 
+	s.ResetCipher(s.commKey)
 
 	return conn, nil
 }

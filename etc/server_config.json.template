@@ -1,4 +1,6 @@
 {
     "localAddr": "0.0.0.0:8001",
-    "secKey": ""
+    "secKey": "",
+    "fakeRequest": [],
+    "fakeResponse": []
 }
