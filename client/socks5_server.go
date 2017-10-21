@@ -49,14 +49,13 @@ func (s *Socks5Server) MethodSelect() error {
 func (s *Socks5Server) ReceiveDstAddr() (string, error) {
 	b := make([]byte, 256)
 
-	_, err := io.ReadFull(s.conn, b[:5])
+	_, err := io.ReadFull(s.conn, b[:4])
 	if err != nil {
 		return "", err
 	}
 	version := b[0]
 	cmd := b[1]
 	addrType := b[3]
-	domainLength := b[4]
 
 	// check version
 	if version != 0x05 {
@@ -66,19 +65,39 @@ func (s *Socks5Server) ReceiveDstAddr() (string, error) {
 	if cmd != 0x01 {
 		return "", ErrProtocolError
 	}
-	// only support domain
-	if addrType != 0x03 {
+
+	if addrType == 0x01 {
+		// ipv4
+		_, err := io.ReadFull(s.conn, b[:6])
+		if err != nil {
+			return "", err
+		}
+		port := int(b[4])<<8 + int(b[5])
+
+		return fmt.Sprintf("%d.%d.%d.%d:%d",
+			b[0], b[1], b[2], b[3], port), nil
+
+	} else if addrType == 0x03 {
+		// domain
+		_, err := io.ReadFull(s.conn, b[:1])
+		if err != nil {
+			return "", err
+		}
+		domainLength := b[0]
+
+		_, err = io.ReadFull(s.conn, b[:domainLength+2])
+		if err != nil {
+			return "", err
+		}
+		domain := string(b[:domainLength])
+		port := int(b[domainLength])<<8 + int(b[domainLength+1])
+
+		return fmt.Sprintf("%s:%d", domain, port), nil
+
+	} else {
 		return "", ErrProtocolError
 	}
 
-	_, err = io.ReadFull(s.conn, b[:domainLength+2])
-	if err != nil {
-		return "", err
-	}
-	domain := string(b[:domainLength])
-	port := int(b[domainLength])<<8 + int(b[domainLength+1])
-
-	return fmt.Sprintf("%s:%d", domain, port), nil
 }
 
 func (s *Socks5Server) NotifyConnectSuccess() error {
