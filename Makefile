@@ -1,4 +1,4 @@
-PROJ_PATH = github.com/kaienkira/twilight-line-go
+PROJ_PATH = .
 
 .PHONY: build-all build-server build-client
 
@@ -21,6 +21,9 @@ check-format:
 
 do-format:
 	@find . -name '*.go' -exec gofmt -w {} \; -print
+
+clean:
+	@rm -f build/*
 
 bs: build-server
 bc: build-client

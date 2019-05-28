@@ -1,6 +1,6 @@
 #!/bin/bash
 
-proj_path=github.com/kaienkira/twilight-line-go
+proj_path=.
 os_list="linux windows darwin freebsd"
 arch_list="amd64 386"
 
