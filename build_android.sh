@@ -4,12 +4,12 @@ proj_path=.
 os=android
 android_compiler_dir=\
 $ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/bin
-android_sdk_version=android28
 
 build()
 {
     local android_arch=$1
     local go_arch=$2
+    local android_sdk_version=$3
     local compiler=$(printf '%s/%s-linux-%s-clang' \
           "$android_compiler_dir" \
           "$android_arch" "$android_sdk_version")
@@ -27,7 +27,13 @@ build()
     return 0
 }
 
-build x86_64 amd64
+build aarch64 arm64 android28
+if [ $? -ne 0 ]; then exit 1; fi
+build armv7a arm androideabi28
+if [ $? -ne 0 ]; then exit 1; fi
+build x86_64 amd64 android28
+if [ $? -ne 0 ]; then exit 1; fi
+build i686 386 android28
 if [ $? -ne 0 ]; then exit 1; fi
 
 exit 0
