@@ -5,10 +5,10 @@ PROJ_PATH = .
 build-all: build-server build-client
 
 build-server:
-	go build -o bin/twilight-line-server $(PROJ_PATH)/server
+	go build -o bin/twilight-line-server "$(PROJ_PATH)"/server
 
 build-client:
-	go build -o bin/twilight-line-client $(PROJ_PATH)/client
+	go build -o bin/twilight-line-client "$(PROJ_PATH)"/client
 
 run-server:
 	bin/twilight-line-server -e etc/server_config.json
