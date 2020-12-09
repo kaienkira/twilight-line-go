@@ -27,13 +27,13 @@ build()
     return 0
 }
 
-build aarch64 arm64 android28
+build aarch64 arm64 android29
 if [ $? -ne 0 ]; then exit 1; fi
-build armv7a arm androideabi28
+build armv7a arm androideabi29
 if [ $? -ne 0 ]; then exit 1; fi
-build x86_64 amd64 android28
+build x86_64 amd64 android29
 if [ $? -ne 0 ]; then exit 1; fi
-build i686 386 android28
+build i686 386 android29
 if [ $? -ne 0 ]; then exit 1; fi
 
 exit 0
