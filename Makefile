@@ -1,14 +1,12 @@
-PROJ_PATH = .
-
 .PHONY: build-all build-server build-client
 
 build-all: build-server build-client
 
 build-server:
-	go build -o bin/twilight-line-server "$(PROJ_PATH)"/server
+	cd server && go build -o ../bin/twilight-line-server
 
 build-client:
-	go build -o bin/twilight-line-client "$(PROJ_PATH)"/client
+	cd client && go build -o ../bin/twilight-line-client
 
 run-server:
 	bin/twilight-line-server -e etc/server_config.json
