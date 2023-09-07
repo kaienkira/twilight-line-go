@@ -1,3 +1,3 @@
 module github.com/kaienkira/twilight-line-go/client
 
-go 1.19
+go 1.21
