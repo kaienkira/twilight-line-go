@@ -2,7 +2,7 @@
 
 os=android
 android_compiler_dir=\
-$ANDROID_HOME/ndk/26.3.11579264/toolchains/llvm/prebuilt/linux-x86_64/bin
+$ANDROID_HOME/ndk/27.0.12077973/toolchains/llvm/prebuilt/linux-x86_64/bin
 
 build()
 {
@@ -28,13 +28,13 @@ build()
     return 0
 }
 
-build aarch64 arm64 android34
+build aarch64 arm64 android35
 if [ $? -ne 0 ]; then exit 1; fi
-build armv7a arm androideabi34
+build armv7a arm androideabi35
 if [ $? -ne 0 ]; then exit 1; fi
-build x86_64 amd64 android34
+build x86_64 amd64 android35
 if [ $? -ne 0 ]; then exit 1; fi
-build i686 386 android34
+build i686 386 android35
 if [ $? -ne 0 ]; then exit 1; fi
 
 exit 0
