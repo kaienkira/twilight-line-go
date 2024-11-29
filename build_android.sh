@@ -2,7 +2,7 @@
 
 os=android
 android_compiler_dir=\
-$ANDROID_HOME/ndk/27.0.12077973/toolchains/llvm/prebuilt/linux-x86_64/bin
+$ANDROID_HOME/ndk/27.2.12479018/toolchains/llvm/prebuilt/linux-x86_64/bin
 
 build()
 {
