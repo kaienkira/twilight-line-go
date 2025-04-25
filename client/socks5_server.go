@@ -97,7 +97,6 @@ func (s *Socks5Server) ReceiveDstAddr() (string, error) {
 	} else {
 		return "", ErrProtocolError
 	}
-
 }
 
 func (s *Socks5Server) NotifyConnectSuccess() error {
