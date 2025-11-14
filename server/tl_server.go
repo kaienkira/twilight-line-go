@@ -130,7 +130,7 @@ func (s *TlServer) Accept() (net.Conn, error) {
 	// create communication key
 	commKeyLen := 32 + rand.Intn(128-32)
 	s.commKey = make([]byte, commKeyLen)
-	for i := 0; i < commKeyLen; i++ {
+	for i := range commKeyLen {
 		s.commKey[i] = byte(rand.Intn(256))
 	}
 
